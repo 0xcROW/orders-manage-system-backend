@@ -4,8 +4,7 @@ import clientController from '../controllers/client.controller.js';
 const router = Router();
 
 router.post('/', clientController.createClient);
-//TODO add auth middleware to validate if the admin is logged in
-//TODO validations with zod
+
 router.get('/', clientController.getAllClients);
 router.get('/:id', clientController.getClientById);
 router.get('/email/:email', clientController.getClientByEmail);
