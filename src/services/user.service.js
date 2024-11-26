@@ -61,8 +61,10 @@ async function updateUser(id, user) {
 }
 
 async function deleteUser(id) {
+  //TODO fix delete that is not returning a message if user is not found or when it is deleted
   const user = await usersRepository.getUserById(id);
-  if (!user) {
+  console.log(user);
+  if (user === undefined) {
     return { message: 'Usuário não encontrado' };
   }
   const deletedUser = await usersRepository.deleteUser(id);

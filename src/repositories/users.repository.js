@@ -96,7 +96,7 @@ function updateUser(id, user){
   });
 }
 
-function deleteUser(id){
+async function deleteUser(id){
   return new Promise((resolve, reject) => {
     db.run('DELETE FROM users WHERE id = ?', [id], (err) => {
       if(err){
