@@ -1,5 +1,6 @@
 import usersRepository from '../repositories/users.repository.js';
 import bcrypt from 'bcrypt';
+import { generateJWT } from './auth.service.js';
 
 //TODO validate if :param is returning a error message if not found, instead of crashing the server
 async function createUser(newUser) {
@@ -7,13 +8,13 @@ async function createUser(newUser) {
   if (userExists) {
     return { message: 'Usuário já cadastrado' };
   }
-  //TODO generateJWT
   const pwhash = await bcrypt.hash(newUser.password, 10);
   const user = await usersRepository.createUser({ ...newUser, password: pwhash });
   if (!user) {
     return { message: 'Erro ao criar o usuário' };
   }
-  return user;
+  const token = generateJWT(user.id);
+  return token;
 }
 
 async function getAllUsers() {

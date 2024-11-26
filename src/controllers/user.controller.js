@@ -1,4 +1,5 @@
 import userService from '../services/user.service.js';
+import { login } from '../services/auth.service.js';
 
 async function createUser(req, res) {
   const user = req.body;
@@ -10,8 +11,6 @@ async function createUser(req, res) {
     res.status(500);
   }
 }
-
-//TODO login
 
 async function getAllUsers(req, res) {
   try {
@@ -78,6 +77,20 @@ async function deleteUser(req, res) {
   }
 }
 
+async function loginUser(req, res) {
+  const { email, password } = req.body;
+  try {
+    const token = await userService.login(email, password);
+    if (token.message) {
+      res.status(401).send(token);
+    }
+    res.status(200).send(token);
+  } catch (err) {
+    console.error(err);
+    res.status(500);
+  }
+}
+
 export default {
   createUser,
   getAllUsers,
@@ -85,5 +98,6 @@ export default {
   getUserByEmail,
   getUserBySearch,
   updateUser,
-  deleteUser
+  deleteUser,
+  loginUser
 };

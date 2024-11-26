@@ -10,22 +10,22 @@ db.run(`
         phone TEXT, 
         address TEXT, 
         created_at TEXT, 
-        updated_at TEXT
+        updated_at TEXT,
+        FOREIGN KEY (userId) REFERENCES users(id)
     )`
 );
 
-function createClient(client) {
+function createClient(client, userId) {
   const id = shortid.generate();
   const { name, document, email, phone, address } = client;
   const timestamp = new Date().toISOString();
   return new Promise((resolve, reject) => {
-    db.run('INSERT INTO clients (id, name, document, email, phone, address, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [id, name, document, email, phone, address, timestamp, timestamp], (err) => {
+    db.run('INSERT INTO clients (id, name, document, email, phone, address, created_at, userId) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [id, name, document, email, phone, address, timestamp, userId], (err) => {
         if (err) {
           reject(err);
         }
-        resolve({ id: id, ...client });
-        console.log(id, name, document, email, phone, address, timestamp);
+        resolve({ id: this.lastID, name, email, phone, address, userId, message: 'Cliente criado com sucesso!' });
       });
   });
 }
