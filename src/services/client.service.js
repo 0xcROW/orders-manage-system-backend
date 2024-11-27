@@ -1,13 +1,17 @@
 import clientsRepository from '../repositories/clients.repository.js';
+import db from '../config/database.js';
 
-async function createClient(client) {
-  if (await clientsRepository.getClientByEmail(client.email)) {
-    throw new Error('Email já cadastrado!');
+async function createClient(client, userId) {
+  try {
+    const createdClient = await clientsRepository.createClient(client, userId);
+    if (!createdClient) {
+      return { error: true, message: 'Erro ao criar cliente!' };
+    }
+    return { error: false, message: 'Cliente criado com sucesso!', client: createdClient };
+  } catch (err) {
+    console.error('Error in createClient:', err);
+    return { error: true, message: 'Erro ao criar cliente!' };
   }
-  if (await clientsRepository.getClientByDocument(client.document)) {
-    throw new Error('Cliente já cadastrado!');
-  }
-  return await clientsRepository.createClient({ ...client });
 }
 
 async function getAllClients() {
@@ -16,53 +20,66 @@ async function getAllClients() {
 
 async function getClientById(id) {
   if (!id) {
-    throw new Error('ID é obrigatório!');
+    return { error: true, message: 'Id não informado!' };
   }
-  const client = await clientsRepository.getClientById(id);
-  if (!client) {
-    throw new Error('Cliente não encontrado!');
-  }
-  return client;
+  return await getClientByField('Id', id);
 }
 
 async function getClientByEmail(email) {
-  const client = await clientsRepository.getClientByEmail(email);
-  if (!client) {
-    throw new Error('Cliente não encontrado!');
-  }
-  return client;
+  return await getClientByField('Email', email);
 }
 
 async function getClientByDocument(document) {
-  const client = await clientsRepository.getClientByDocument(document);
+  return await getClientByField('Document', document);
+}
+
+async function getClientByField(field, value) {
+  const client = await clientsRepository[`getClientBy${field.charAt(0).toUpperCase() + field.slice(1)}`](value);
   if (!client) {
-    throw new Error('Cliente não encontrado!');
+    return { error: true, message: `Cliente com ${field} ${value} não encontrado!` };
   }
   return client;
 }
 
-async function updateClient(id, client) {
-  const hasClient = await clientsRepository.getClientById(id);
-  if (!hasClient) {
-    throw new Error('Cliente não encontrado!');
+async function updateClient(id, client, userId) {
+  const clientToUpdate = await clientsRepository.getClientById(id);
+
+  console.log('clientToUpdate:', clientToUpdate);
+
+  if (!clientToUpdate) {
+    return { error: true, message: 'Cliente não encontrado!' };
   }
-  if (await clientsRepository.getClientByEmail(client.email)) {
-    throw new Error('Email já cadastrado!');
+
+  if (clientToUpdate.userId !== userId) {
+    return { error: true, message: 'Usuário não autorizado!' };
   }
-  if (await clientsRepository.getClientByDocument(client.document)) {
-    throw new Error('Cliente já cadastrado!');
-  }
+
   const updatedClient = await clientsRepository.updateClient(id, client);
   return updatedClient;
 }
 
-async function deleteClient(id) {
+async function deleteClient(id, userId) {
   const client = await clientsRepository.getClientById(id);
   if (!client) {
-    throw new Error('Cliente não encontrado!');
+    return { error: true, message: 'Cliente não encontrado!' };
   }
+
+  if (client.userId !== userId) {
+    return { error: true, message: 'Usuário não autorizado!' };
+  }
+
   await clientsRepository.deleteClient(id);
-  return { message: 'Cliente removido com sucesso!' };
+  return { error: false, message: 'Cliente removido com sucesso!' };
+}
+
+async function searchClients(searchCriteria) {
+  try {
+    // Call the repository method to search clients based on the provided criteria
+    const clients = await clientsRepository.searchClients(searchCriteria);
+    return clients;
+  } catch (error) {
+    throw new Error('Error while searching for clients');
+  }
 }
 
 export default {
@@ -73,4 +90,5 @@ export default {
   getClientByDocument,
   updateClient,
   deleteClient,
+  searchClients,
 };

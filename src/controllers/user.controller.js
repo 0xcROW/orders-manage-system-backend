@@ -1,5 +1,5 @@
 import userService from '../services/user.service.js';
-import { login } from '../services/auth.service.js';
+import { loginService } from '../services/auth.service.js';
 
 async function createUser(req, res) {
   const user = req.body;
@@ -80,14 +80,13 @@ async function deleteUser(req, res) {
 async function loginUser(req, res) {
   const { email, password } = req.body;
   try {
-    const token = await userService.login(email, password);
-    if (token.message) {
+    const token = await loginService(email, password);
+    if ({ token }) {
       res.status(401).send(token);
     }
     res.status(200).send(token);
   } catch (err) {
-    console.error(err);
-    res.status(500);
+    res.status(500).send({ message: 'Usuário ou senha inválidos' });
   }
 }
 

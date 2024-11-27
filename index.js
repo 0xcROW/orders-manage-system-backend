@@ -7,6 +7,7 @@ const port = process.env.PORT || 3000;
 const url = process.env.URL || 'localhost';
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(router);
 
 //TODO add auth middleware to validate if the admin is logged in

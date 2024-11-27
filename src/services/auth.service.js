@@ -3,20 +3,37 @@ import 'dotenv/config';
 import usersRepository from '../repositories/users.repository.js';
 import bcrypt from 'bcrypt';
 
-//TODO change expiresIn from 30d to 1h after project is done
-export function generateJWT(user) {
-  return jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
+// Generate JWT token
+export function generateJWT(id) {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
 }
 
-export async function login(email, password) {
-  const user = await usersRepository.getUserByEmail(email);
-  if (!user) {
-    return { message: 'Usuário não encontrado' };
+// Login service
+export async function loginService(email, password) {
+  try {
+    // Input validation
+    if (!email || !password) {
+      return { success: false, message: 'Email e senha são obrigatórios!' };
+    }
+
+    // Fetch user by email
+    const user = await usersRepository.getUserByEmail(email);
+    if (!user) {
+      return { success: false, message: 'Usuário ou senha inválidos!' };
+    }
+
+    // Compare provided password with hashed password
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return { success: false, message: 'Usuário ou senha inválidos!' };
+    }
+
+    // Generate and return JWT
+    const token = generateJWT(user.id);
+    return { success: true, token };
+  } catch (error) {
+    // Log and handle unexpected errors
+    console.error('Login error:', error);
+    return { success: false, message: 'Erro interno do servidor' };
   }
-  const passwordMatch = await bcrypt.compare(password, user.password);
-  if (!passwordMatch) {
-    return { message: 'Senha incorreta' };
-  }
-  const token = generateJWT(user);
-  return token;
 }
