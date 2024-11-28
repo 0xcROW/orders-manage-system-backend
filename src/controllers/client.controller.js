@@ -60,10 +60,12 @@ async function updateClient(req, res) {
   const { id: clientId } = req.params;
   const { userId } = req;
 
+  console.log('ID DO CLIENTE: ', clientId);
   try {
     // Buscar cliente no banco
     const existingClient = await clientService.getClientById(clientId);
 
+    console.log('Client fetched from DB controller:', existingClient);
     // Verificar se o cliente existe
     if (!existingClient) {
       return res.status(404).send({ message: 'Cliente não encontrado!' });

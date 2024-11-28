@@ -1,5 +1,4 @@
 import clientsRepository from '../repositories/clients.repository.js';
-import db from '../config/database.js';
 
 async function createClient(client, userId) {
   try {
@@ -41,10 +40,9 @@ async function getClientByField(field, value) {
   return client;
 }
 
-async function updateClient(id, client, userId) {
+async function updateClient(client, id, userId) {
   const clientToUpdate = await clientsRepository.getClientById(id);
 
-  console.log('clientToUpdate:', clientToUpdate);
 
   if (!clientToUpdate) {
     return { error: true, message: 'Cliente não encontrado!' };
